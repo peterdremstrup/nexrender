@@ -50,6 +50,10 @@ module.exports = function(project) {
             }
         }
 
+        let assets = project.assets.slice();
+        if (project.preprocess) assets.push(project.preprocess);
+        if (project.postprocess) assets.push(project.postprocess);
+
         // iterate over each asset and download it (copy it)
         Promise.all(project.assets.map((asset) => {
             if (asset.type === 's3') {
@@ -58,6 +62,18 @@ module.exports = function(project) {
                 return download(asset.src, project.workpath);
             } else if (asset.type === 'path' || isLocalPath(asset.src)) {
                 return copy(asset.src, project.workpath);
+            } else if (asset.type === 'base64') {
+                const data = Buffer.from(asset.src, 'base64').toString('utf-8');
+                const assetPath = `${project.workPath}/${asset.name}`;
+
+                fs.writeFile(assetPath, data, 'utf8', (err) => {
+                  if (err) console.log(err);
+
+                  console.log('wrote file');
+                });
+                asset.src = assetPath;
+
+                return resolve();
             }
         })).then(() => {
             return resolve(project);

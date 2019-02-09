@@ -7,9 +7,12 @@ coverage/
 
 # files
 *.log
+*.sw*
 
 # env files
 .env
+db.json
+templates
 
 # mac crap :D
 .DS_Store

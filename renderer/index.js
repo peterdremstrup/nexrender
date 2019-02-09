@@ -12,6 +12,9 @@ const render        = require('./tasks/render');
 const verify        = require('./tasks/verify');
 const actions       = require('./tasks/actions');
 const cleanup       = require('./tasks/cleanup');
+const aeProcess     = require('./tasks/process');
+const preprocess    = aeProcess.bind(undefined, 'pre');
+const postprocess    = aeProcess.bind(undefined, 'post');
 
 const Project       = require('../api/models/project');
 
@@ -20,9 +23,9 @@ const API_REQUEST_INTERVAL = process.env.API_REQUEST_INTERVAL || 15 * 60 * 1000;
 /**
  * Apply tasks one by one
  * Each task is applied only once, after previous is finished
- * @param  {Project} project 
+ * @param  {Project} project
  * @param  {Function} resolve
- * @param  {Function} reject 
+ * @param  {Function} reject
  */
 function applyTasks(project, resolve, reject) {
 
@@ -33,8 +36,10 @@ function applyTasks(project, resolve, reject) {
         .then(setup)
         .then(download)
         .then(rename)
+        .then(preprocess)
         .then(filter)
         .then(patch)
+        .then(postprocess)
         .then(render)
         .then(verify)
         .then(actions)
@@ -160,7 +165,7 @@ module.exports = {
 
     /**
      * Local project model renderer method wrapper
-     * 
+     *
      * @param  {string} binary  path to Adobe After Effects aerender binary
      * @param  {Array} opts    optional options array
      * @param  {Project} project project model
